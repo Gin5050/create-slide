@@ -52,11 +52,12 @@ async function generateSlide(): Promise<void> {
       })
       const upload = await uploadRes.json()
       const body = {
-        model: 'gpt-4o',
+        model: 'o3',
         input: [
           { type: 'text', text: prompt },
           { type: 'file', file: { file_id: upload.id } },
         ],
+        stream: true,
       }
       const res = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
@@ -66,13 +67,21 @@ async function generateSlide(): Promise<void> {
         },
         body: JSON.stringify(body),
       })
-      const data = await res.json()
-      result.value = data.output_text ?? ''
+      const reader = res.body?.getReader()
+      if (reader) {
+        const decoder = new TextDecoder('utf-8')
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          result.value += decoder.decode(value)
+        }
+      }
     } else {
       const text = await file.value.text()
       const body = {
-        model: 'gpt-4o',
+        model: 'o3',
         input: `${prompt}\n\n${text}`,
+        stream: true,
       }
       const res = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
@@ -82,8 +91,15 @@ async function generateSlide(): Promise<void> {
         },
         body: JSON.stringify(body),
       })
-      const data = await res.json()
-      result.value = data.output_text ?? ''
+      const reader = res.body?.getReader()
+      if (reader) {
+        const decoder = new TextDecoder('utf-8')
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          result.value += decoder.decode(value)
+        }
+      }
     }
   } catch (err: any) {
     error.value = err.message
