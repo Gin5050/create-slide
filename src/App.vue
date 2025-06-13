@@ -53,17 +53,12 @@ async function generateSlide(): Promise<void> {
       const upload = await uploadRes.json()
       const body = {
         model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              { type: 'file', file: { file_id: upload.id } },
-            ],
-          },
+        input: [
+          { type: 'text', text: prompt },
+          { type: 'file', file: { file_id: upload.id } },
         ],
       }
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      const res = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -72,19 +67,14 @@ async function generateSlide(): Promise<void> {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      result.value = data.choices?.[0]?.message?.content ?? ''
+      result.value = data.output_text ?? ''
     } else {
       const text = await file.value.text()
       const body = {
         model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: `${prompt}\n\n${text}`,
-          },
-        ],
+        input: `${prompt}\n\n${text}`,
       }
-      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      const res = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
@@ -93,7 +83,7 @@ async function generateSlide(): Promise<void> {
         body: JSON.stringify(body),
       })
       const data = await res.json()
-      result.value = data.choices?.[0]?.message?.content ?? ''
+      result.value = data.output_text ?? ''
     }
   } catch (err: any) {
     error.value = err.message
