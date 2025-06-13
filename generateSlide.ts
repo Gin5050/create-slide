@@ -4,16 +4,16 @@ import OpenAI from 'openai';
 
 const openai = new OpenAI();
 
-async function main() {
+async function main(): Promise<void> {
   const filePath = process.argv[2];
   if (!filePath) {
-    console.error('Usage: node generateSlide.js <file>');
+    console.error('Usage: npx tsx generateSlide.ts <file>');
     process.exit(1);
   }
 
   const ext = path.extname(filePath).toLowerCase();
   const prompt = '与えられたファイルから、slidevでスライドを作成するためのmarkdownファイルを作成して';
-  let messages;
+  let messages: any;
 
   if (ext === '.pdf') {
     const file = await openai.files.create({
