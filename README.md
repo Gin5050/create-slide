@@ -14,4 +14,4 @@ npm run dev
 npm run slidev
 ```
 
-`slides.md` を編集することでスライドを作成できます。Vue3 + TypeScript + Vite を使用しています。
+`slides/` ディレクトリ以下に Slidev プロジェクトを配置しています。`slides/theme` に共通テーマを置き、`slides/layouts` では独自レイアウトを定義しています。`slides/slides.md` を編集してスライドを作成してください。
