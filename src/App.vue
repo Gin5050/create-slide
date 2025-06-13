@@ -52,11 +52,12 @@ async function generateSlide(): Promise<void> {
       })
       const upload = await uploadRes.json()
       const body = {
-        model: 'gpt-4o',
+        model: 'o3',
         input: [
           { type: 'text', text: prompt },
           { type: 'file', file: { file_id: upload.id } },
         ],
+        stream: true,
       }
       const res = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
@@ -66,13 +67,21 @@ async function generateSlide(): Promise<void> {
         },
         body: JSON.stringify(body),
       })
-      const data = await res.json()
-      result.value = data.output_text ?? ''
+      const reader = res.body?.getReader()
+      if (reader) {
+        const decoder = new TextDecoder('utf-8')
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          result.value += decoder.decode(value)
+        }
+      }
     } else {
       const text = await file.value.text()
       const body = {
-        model: 'gpt-4o',
+        model: 'o3',
         input: `${prompt}\n\n${text}`,
+        stream: true,
       }
       const res = await fetch('https://api.openai.com/v1/responses', {
         method: 'POST',
@@ -82,8 +91,15 @@ async function generateSlide(): Promise<void> {
         },
         body: JSON.stringify(body),
       })
-      const data = await res.json()
-      result.value = data.output_text ?? ''
+      const reader = res.body?.getReader()
+      if (reader) {
+        const decoder = new TextDecoder('utf-8')
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          result.value += decoder.decode(value)
+        }
+      }
     }
   } catch (err: any) {
     error.value = err.message
@@ -99,10 +115,11 @@ async function generateSlide(): Promise<void> {
     <input type="file" accept=".pdf,.md,.txt" @change="handleFileChange" />
     <p v-if="file">選択されたファイル: {{ file.name }}</p>
     <p v-if="error" style="color: red;">{{ error }}</p>
-    <button @click="generateSlide" :disabled="!file || loading">
-      openaiでslidev用のファイルを作る
-    </button>
-    <textarea v-if="result" v-model="result" rows="20" style="width: 100%; margin-top: 1rem;"></textarea>
+<button @click="generateSlide" :disabled="!file || loading">
+  openaiでslidev用のファイルを作る
+</button>
+<div v-if="loading" class="spinner"></div>
+<textarea v-if="result" v-model="result" rows="20" style="width: 100%; margin-top: 1rem;"></textarea>
   </div>
 </template>
 
@@ -110,5 +127,24 @@ async function generateSlide(): Promise<void> {
 .app {
   padding: 2rem;
   font-family: sans-serif;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.spinner {
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #09f;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  margin-top: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
