@@ -2,8 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
 
-const openai = new OpenAI();
-
 async function main(): Promise<void> {
   const filePath = process.argv[2];
   if (!filePath) {
@@ -11,40 +9,39 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    console.error('OPENAI_API_KEY is not set');
+    process.exit(1);
+  }
+
+  const openai = new OpenAI({ apiKey });
+
   const ext = path.extname(filePath).toLowerCase();
   const prompt = '与えられたファイルから、slidevでスライドを作成するためのmarkdownファイルを作成して';
-  let messages: any;
 
+  let response;
   if (ext === '.pdf') {
-    const file = await openai.files.create({
+    const uploaded = await openai.files.create({
       file: fs.createReadStream(filePath),
       purpose: 'assistants',
     });
-    messages = [
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: prompt },
-          { type: 'file', file: { file_id: file.id } },
-        ],
-      },
-    ];
+    response = await openai.responses.create({
+      model: 'o3',
+      input: [
+        { type: 'text', text: prompt },
+        { type: 'file', file: { file_id: uploaded.id } },
+      ],
+    });
   } else {
     const text = fs.readFileSync(filePath, 'utf-8');
-    messages = [
-      {
-        role: 'user',
-        content: `${prompt}\n\n${text}`,
-      },
-    ];
+    response = await openai.responses.create({
+      model: 'o3',
+      input: `${prompt}\n\n${text}`,
+    });
   }
 
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o',
-    messages,
-  });
-
-  const markdown = completion.choices[0]?.message?.content ?? '';
+  const markdown = (response as any).output_text ?? '';
   fs.writeFileSync('slides.md', markdown, 'utf-8');
   console.log('Generated slides saved to slides.md');
 }
