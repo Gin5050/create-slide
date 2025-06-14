@@ -8,13 +8,25 @@
 npm run dev
 ```
 
+## ビルド
+
+```bash
+npm run build
+```
+
+## 本番プレビュー
+
+```bash
+npm run preview
+```
+
 ## slidev プレビュー
 
 ```bash
 npm run slidev
 ```
 
-`slides.md` を編集することでスライドを作成できます。Vue3 + TypeScript + Vite を使用しています。
+`slides.md` を編集することでスライドを作成できます。Vue3 + TypeScript + Nuxt 3 を使用しています。
 
 ## スライドの自動生成
 
@@ -39,5 +51,5 @@ npm run dev
 
 ## フロントエンドからの生成
 
-画面でファイルを選択すると **openaiでslidev用のファイルを作る** ボタンが有効になります。ボタンを押すと OpenAI の **Responses API** を使用して Markdown を生成し、ストリームで逐次表示されます。モデルは `o3` を使用しており、出力はテキストエリアで編集可能です。フロントエンドでも `openai-node` を利用してリクエストを送信します。開発サーバーを起動する際は `VITE_OPENAI_API_KEY` 環境変数に API キーを設定してください。
+画面でファイルを選択すると **openaiでslidev用のファイルを作る** ボタンが有効になります。ボタンを押すと OpenAI の **Responses API** を使用して Markdown を生成し、ストリームで逐次表示されます。モデルは `o3` を使用しており、出力はテキストエリアで編集可能です。フロントエンドでも `openai-node` を利用してリクエストを送信します。開発サーバーを起動する際は `OPENAI_API_KEY` 環境変数に API キーを設定してください。
 
