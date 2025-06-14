@@ -8,7 +8,8 @@ const generating = ref(false)
 const result = ref('')
 const loading = ref(false)
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+const config = useRuntimeConfig()
+const apiKey = config.public.OPENAI_API_KEY
 const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
 
 function handleFileChange(e: Event) {
