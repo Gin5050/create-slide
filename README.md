@@ -21,7 +21,7 @@ npm run slidev
 OpenAI API を使用してファイルの内容から `slides.md` を生成するスクリプトを用意しています。
 
 ```bash
-# 環境変数 OPENAI_API_KEY を設定して実行
+# 環境変数 `NITRO_OPENAI_API_KEY` を設定して実行
 npx tsx generateSlide.ts <対象ファイル>
 ```
 
@@ -39,5 +39,5 @@ npm run dev
 
 ## フロントエンドからの生成
 
-画面でファイルを選択すると **openaiでslidev用のファイルを作る** ボタンが有効になります。ボタンを押すと OpenAI の **Responses API** を使用して Markdown を生成し、ストリームで逐次表示されます。モデルは `o3` を使用しており、出力はテキストエリアで編集可能です。フロントエンドでも `openai-node` を利用してリクエストを送信します。開発サーバーを起動する際は `VITE_OPENAI_API_KEY` 環境変数に API キーを設定してください。
+画面でファイルを選択すると **openaiでslidev用のファイルを作る** ボタンが有効になります。ボタンを押すと OpenAI の **Responses API** を使用して Markdown を生成し、ストリームで逐次表示されます。モデルは `o3` を使用しており、出力はテキストエリアで編集可能です。フロントエンドでも `openai-node` を利用してリクエストを送信します。開発サーバーを起動する際は `.env` に `NITRO_OPENAI_API_KEY` を設定するか、環境変数 `NITRO_OPENAI_API_KEY` に API キーを指定してください。
 

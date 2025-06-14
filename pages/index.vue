@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import OpenAI from 'openai'
+import { useOpenAI } from '~/composables/useOpenAI'
 
 const file = ref<File | null>(null)
 const error = ref('')
@@ -9,8 +9,8 @@ const result = ref('')
 const loading = ref(false)
 
 const config = useRuntimeConfig()
-const apiKey = config.public.OPENAI_API_KEY
-const openai = new OpenAI({ apiKey, dangerouslyAllowBrowser: true })
+const apiKey = config.OPENAI_API_KEY as string | undefined
+const openai = useOpenAI()
 
 function handleFileChange(e: Event) {
   const target = e.target as HTMLInputElement
