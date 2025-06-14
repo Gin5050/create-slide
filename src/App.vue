@@ -4,6 +4,7 @@ import OpenAI from 'openai'
 
 const file = ref<File | null>(null)
 const error = ref('')
+const generating = ref(false)
 const result = ref('')
 const loading = ref(false)
 
@@ -30,6 +31,23 @@ function handleFileChange(e: Event) {
   }
 }
 
+async function uploadFile() {
+  if (!file.value) return
+  generating.value = true
+  const form = new FormData()
+  form.append('file', file.value)
+  try {
+    const res = await fetch('/api/generate', { method: 'POST', body: form })
+    if (!res.ok) throw new Error('failed')
+    const data = await res.json()
+    result.value = data.markdown || ''
+  } catch (err) {
+    error.value = '生成に失敗しました'
+  } finally {
+    generating.value = false
+  }
+}
+
 async function generateSlide(): Promise<void> {
   if (!file.value) return
   if (!apiKey) {
@@ -50,8 +68,13 @@ async function generateSlide(): Promise<void> {
       const stream = await openai.responses.create({
         model: 'o3',
         input: [
-          { type: 'text', text: prompt },
-          { type: 'file', file: { file_id: uploaded.id } },
+          {
+            role: 'user',
+            content: [
+              { type: "input_text", text: `${prompt}\n\nファイルID: ${uploaded.id}` },
+              { type: "input_file", file_id: uploaded.id },
+            ]
+          }
         ],
         stream: true,
       })
@@ -83,11 +106,13 @@ async function generateSlide(): Promise<void> {
     <input type="file" accept=".pdf,.md,.txt" @change="handleFileChange" />
     <p v-if="file">選択されたファイル: {{ file.name }}</p>
     <p v-if="error" style="color: red;">{{ error }}</p>
-<button @click="generateSlide" :disabled="!file || loading">
-  openaiでslidev用のファイルを作る
-</button>
-<div v-if="loading" class="spinner"></div>
-<textarea v-if="result" v-model="result" rows="20" style="width: 100%; margin-top: 1rem;"></textarea>
+    <button :disabled="!file || generating" @click="uploadFile">アップロード</button>
+    <pre v-if="result">{{ result }}</pre>
+    <button @click="generateSlide" :disabled="!file || loading">
+      openaiでslidev用のファイルを作る
+    </button>
+    <div v-if="loading" class="spinner"></div>
+    <textarea v-if="result" v-model="result" rows="20" style="width: 100%; margin-top: 1rem;"></textarea>
   </div>
 </template>
 
@@ -96,10 +121,12 @@ async function generateSlide(): Promise<void> {
   padding: 2rem;
   font-family: sans-serif;
 }
+
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
 .spinner {
   border: 4px solid rgba(0, 0, 0, 0.1);
   border-left-color: #09f;

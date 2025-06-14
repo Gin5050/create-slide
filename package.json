@@ -21,6 +21,8 @@
     "vue": "^3.5.16"
   },
   "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
     "openai": "^5.3.0"
   }
 }
