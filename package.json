@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "slidev": "slidev"
+    "slidev": "slidev slides/slides.md"
   },
   "keywords": [],
   "author": "",

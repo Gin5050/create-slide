@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
-import { generateSlides } from './generateSlide.js';
+import { generateSlides } from './generateSlide.ts';
 
 const upload = multer({ dest: 'uploads/' });
 const app = express();
@@ -12,7 +12,7 @@ app.post('/api/generate', upload.single('file'), async (req, res) => {
   }
   try {
     const markdown = await generateSlides(req.file.path);
-    fs.unlink(req.file.path, () => {});
+    fs.unlink(req.file.path, () => { });
     res.json({ markdown });
   } catch (err: any) {
     console.error(err);

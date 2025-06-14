@@ -1,0 +1,24 @@
+:root {
+  --c-brand:   #0052B4;
+  --c-accent:  #00A0E9;
+  --c-bg:      #ffffff;
+  --c-text:    #1a1a1a;
+  --c-muted:   #6b7280;
+  --font-sans: 'Inter', 'Noto Sans JP', sans-serif;
+}
+
+html {
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+h1 { @apply text-4xl font-bold mb-4; }
+h2 { @apply text-3xl font-semibold mb-3; }
+h3 { @apply text-2xl font-semibold mb-2; }
+p  { @apply leading-relaxed; }
+
+.callout-info   { @apply border-l-4 pl-4 my-2 bg-accent/10 border-accent; }
+.callout-warn   { @apply border-l-4 pl-4 my-2 bg-yellow-100 border-yellow-500; }
+
