@@ -6,6 +6,8 @@ const error = ref('')
 const generating = ref(false)
 const result = ref('')
 const loading = ref(false)
+const showPreview = ref(false)
+const previewUrl = ref('')
 
 const config = useRuntimeConfig()
 const apiKey = config.OPENAI_API_KEY as string | undefined
@@ -49,6 +51,41 @@ async function uploadFile() {
     generating.value = false
   }
 }
+
+async function saveAndPreview() {
+  if (!result.value) return
+  
+  loading.value = true
+  error.value = ''
+  
+  try {
+    // Markdownを保存してSlidevプレビューを開始
+    const response = await fetch('/api/save-and-preview', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ markdown: result.value }),
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      previewUrl.value = data.previewUrl
+      showPreview.value = true
+    } else {
+      error.value = 'プレビューの開始に失敗しました'
+    }
+  } catch (err) {
+    error.value = 'プレビューの開始に失敗しました'
+  } finally {
+    loading.value = false
+  }
+}
+
+function closePreview() {
+  showPreview.value = false
+  previewUrl.value = ''
+}
 </script>
 
 <template>
@@ -57,9 +94,38 @@ async function uploadFile() {
     <input type="file" accept=".pdf,.md,.txt" @change="handleFileChange" />
     <p v-if="file">選択されたファイル: {{ file.name }}</p>
     <p v-if="error" style="color: red;">{{ error }}</p>
-    <button :disabled="!file || generating" @click="uploadFile">アップロード</button>
-    <pre v-if="result">{{ result }}</pre>
-    <textarea v-if="result" v-model="result" rows="20" style="width: 100%; margin-top: 1rem;"></textarea>
+    <button :disabled="!file || generating" @click="uploadFile">
+      {{ generating ? '生成中...' : 'アップロード' }}
+    </button>
+    
+    <div v-if="result" class="result-section">
+      <h2>生成されたMarkdown</h2>
+      <div class="action-buttons">
+        <button @click="saveAndPreview" class="preview-btn" :disabled="loading">
+          {{ loading ? 'プレビュー開始中...' : 'Slidevでプレビュー' }}
+        </button>
+      </div>
+      <textarea v-model="result" rows="20" class="markdown-editor"></textarea>
+    </div>
+
+    <!-- Slidevプレビューモーダル -->
+    <div v-if="showPreview" class="preview-modal">
+      <div class="preview-header">
+        <div>
+          <h3>Slidevプレビュー</h3>
+          <p class="preview-note">スライドが読み込まれるまで少々お待ちください</p>
+        </div>
+        <button @click="closePreview" class="close-btn">×</button>
+      </div>
+      <div class="preview-content">
+        <iframe 
+          v-if="previewUrl"
+          :src="previewUrl" 
+          class="preview-iframe"
+          frameborder="0"
+        ></iframe>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -88,5 +154,91 @@ button:disabled {
   to {
     transform: rotate(360deg);
   }
+}
+
+.result-section {
+  margin-top: 2rem;
+}
+
+.action-buttons {
+  margin: 1rem 0;
+}
+
+.preview-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.preview-btn:hover {
+  background-color: #45a049;
+}
+
+.markdown-editor {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.preview-header {
+  background: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.preview-header h3 {
+  margin: 0;
+}
+
+.preview-note {
+  margin: 5px 0 0 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+.preview-content {
+  flex: 1;
+  background: white;
+  overflow: hidden;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 </style>

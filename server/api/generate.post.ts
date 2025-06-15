@@ -21,6 +21,7 @@ export default defineEventHandler(async (event) => {
     await fs.unlink(tempPath)
     return { markdown }
   } catch (err) {
+    console.error('[generate-slide error]', err)
     await fs.unlink(tempPath).catch(() => { })
     throw createError({ statusCode: 500, statusMessage: 'error generating slide' })
   }

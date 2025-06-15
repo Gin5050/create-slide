@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nuxt dev",
     "build": "nuxt build",
-    "slidev": "slidev slides/slides.md"
+    "slidev": "slidev slides/slides.md",
+    "slidev:preview": "slidev slides/slides.md --port 3030"
   },
   "keywords": [],
   "author": "",

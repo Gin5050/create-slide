@@ -22,8 +22,8 @@ export async function generateSlides(filePath: string): Promise<string> {
             {
                 role: 'user',
                 content: [
-                    { type: 'text', text: prompt },
-                    { type: 'file', file: { file_id: file.id } },
+                    { type: 'input_text', text: prompt },
+                    { type: 'input_file', file_id: file.id },
                 ],
             },
         ]
@@ -31,16 +31,20 @@ export async function generateSlides(filePath: string): Promise<string> {
         const text = fs.readFileSync(filePath, 'utf-8')
         messages = [
             {
+                role: 'system',
+                content: 'あなたはslidev用のmarkdownを作成するためのアシスタントです。回答はそのまま編集、コピペできるようにslidev用のmarkdown以外のテキストは含めないでください。',
+            },
+            {
                 role: 'user',
                 content: `${prompt}\n\n${text}`,
             },
         ]
     }
 
-    const completion = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages,
+    const result = await openai.responses.create({
+        model: 'o4-mini',
+        input: messages,
     })
 
-    return completion.choices[0]?.message?.content ?? ''
+    return result.output_text ?? ''
 }
