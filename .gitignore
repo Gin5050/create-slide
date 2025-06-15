@@ -2,3 +2,5 @@ node_modules
 /dist
 *.log
 .env
+.nuxt
+.DS_Store
