@@ -8,9 +8,6 @@ export default defineNuxtConfig({
     strict: true
   },
   runtimeConfig: {
-    OPENAI_API_KEY: process.env.NITRO_OPENAI_API_KEY,
-    public: {
-      OPENAI_API_KEY: process.env.NITRO_OPENAI_API_KEY
-    }
+    OPENAI_API_KEY: '',
   }
 })

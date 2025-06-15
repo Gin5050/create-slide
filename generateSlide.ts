@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import OpenAI from 'openai';
 
-const openai = new OpenAI({ apiKey: process.env.NITRO_OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.NUXT_OPENAI_API_KEY });
 
 export async function generateSlides(filePath: string): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();

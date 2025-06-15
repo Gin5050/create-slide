@@ -2,7 +2,7 @@ import { defineEventHandler, readMultipartFormData, createError } from 'h3'
 import { promises as fs } from 'fs'
 import { tmpdir } from 'os'
 import path from 'path'
-import { generateSlides } from '../../generateSlide'
+import { generateSlides } from '../utils/generateSlide'
 
 export default defineEventHandler(async (event) => {
   const formData = await readMultipartFormData(event)

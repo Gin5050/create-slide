@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useOpenAI } from '~/composables/useOpenAI'
 
 const file = ref<File | null>(null)
 const error = ref('')
@@ -10,7 +9,9 @@ const loading = ref(false)
 
 const config = useRuntimeConfig()
 const apiKey = config.OPENAI_API_KEY as string | undefined
-const openai = useOpenAI()
+if (!apiKey) {
+  console.warn('OPENAI_API_KEY is not set in the runtime config')
+}
 
 function handleFileChange(e: Event) {
   const target = e.target as HTMLInputElement
@@ -48,57 +49,6 @@ async function uploadFile() {
     generating.value = false
   }
 }
-
-async function generateSlide(): Promise<void> {
-  if (!file.value) return
-  if (!apiKey) {
-    error.value = 'OPENAI_API_KEY が設定されていません'
-    return
-  }
-  loading.value = true
-  error.value = ''
-  result.value = ''
-  try {
-    const ext = file.value.name.split('.').pop()?.toLowerCase()
-    const prompt = '与えられたファイルから、slidevでスライドを作成するためのmarkdownファイルを作成して'
-    if (ext === 'pdf') {
-      const uploaded = await openai.files.create({
-        file: file.value,
-        purpose: 'assistants',
-      })
-      const stream = await openai.responses.create({
-        model: 'o3',
-        input: [
-          {
-            role: 'user',
-            content: [
-              { type: "input_text", text: `${prompt}\n\nファイルID: ${uploaded.id}` },
-              { type: "input_file", file_id: uploaded.id },
-            ]
-          }
-        ],
-        stream: true,
-      })
-      for await (const part of stream as any) {
-        result.value += part.output_text ?? ''
-      }
-    } else {
-      const text = await file.value.text()
-      const stream = await openai.responses.create({
-        model: 'o3',
-        input: `${prompt}\n\n${text}`,
-        stream: true,
-      })
-      for await (const part of stream as any) {
-        result.value += part.output_text ?? ''
-      }
-    }
-  } catch (err: any) {
-    error.value = err.message
-  } finally {
-    loading.value = false
-  }
-}
 </script>
 
 <template>
@@ -109,10 +59,6 @@ async function generateSlide(): Promise<void> {
     <p v-if="error" style="color: red;">{{ error }}</p>
     <button :disabled="!file || generating" @click="uploadFile">アップロード</button>
     <pre v-if="result">{{ result }}</pre>
-    <button @click="generateSlide" :disabled="!file || loading">
-      openaiでslidev用のファイルを作る
-    </button>
-    <div v-if="loading" class="spinner"></div>
     <textarea v-if="result" v-model="result" rows="20" style="width: 100%; margin-top: 1rem;"></textarea>
   </div>
 </template>
